@@ -1,75 +1,122 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import HeroCarousel from '@/components/Carousel';
 import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect, useState } from 'react';
+import Svg, { Path } from 'react-native-svg';
+
+interface Movie{
+  id: number;
+  original_title: string;
+  poster_path: string;
+  genre_ids: number[];
+}
 
 export default function HomeScreen() {
+
+  const [movies, setMovies] = useState<Movie[]>([])
+
+  async function getMovies(){
+    const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${process.env.EXPO_PUBLIC_API_KEY as string}`)
+    const data = await response.json()
+    setMovies(data.results)
+  }
+
+  useEffect(() => {
+    getMovies()
+  }, [])
+
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ScrollView style={{ backgroundColor: 'black' }} contentContainerStyle={{ paddingTop: 80, rowGap: 25 }}>
+      <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16}} >
+        <View style={styles.titleContainer}>
+          <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8}}>
+            <Text style={{ color: 'gray', fontSize: 12 }}>Welcome World!</Text>
+            <HelloWave/>
+          </View>
+          <View>
+            <Text style={{ color: 'white', fontSize: 16 }}>Let&apos;s relax and watch a movie!</Text>
+          </View>
+        </View>
+        <View>
+          <Image
+            style={styles.pfp}
+            source={require('@/assets/images/react-logo.png')}
+          />
+        </View>
+      </View>
+
+      <View style={styles.stepContainer}>
+        <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', top: 15, left: 10, zIndex: 1 }}>
+          <Path
+            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+            stroke={"white"}
+            strokeWidth={1.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+        <LinearGradient
+          colors={["#2e2e2e", "#141414"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradientBox}
+        > 
+          <TextInput
+            style={styles.input}
+            placeholder="Search movie, cinema, genre..."
+            placeholderTextColor="rgba(255,255,255,0.8)"
+          />
+        </LinearGradient>
+
+      </View>
+      <View style={styles.subHeaderContainer}>
+        <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold'}}>Now Playing</Text>
+        <Text style={{ color: 'orange', fontSize: 14 }}>See All</Text>
+      </View>
+      <View>
+        <HeroCarousel movies={movies} />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    flexDirection: 'column',
   },
   stepContainer: {
     gap: 8,
     marginBottom: 8,
+    marginHorizontal: 16,
+    position: 'relative',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  pfp: {
+    height: 50,
+    width: 50,
+  },
+  input: {
+    borderColor: 'transparent',
+    borderWidth: 1,
+    paddingHorizontal: 30,
+    borderRadius: 4,
+    backgroundColor: 'transparent',
+    color: 'white',
+  },
+    gradientBox: {
+    borderRadius: 12,
+    overflow: "hidden",
+    height: 55,
+    paddingHorizontal: 12,
+    justifyContent: "center"
+  },
+  subHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginBottom: 8,
   },
 });
